@@ -28,5 +28,5 @@ jobs:
         with:
             instance_id: "89260528"
             environment: "${{ inputs.environment || 'test' }}"
-            application_name: "nexsware"
+            application_name: "nexsware-siems"
             allow_ssh_from: "172.232.119.4/32"  # Your IP
