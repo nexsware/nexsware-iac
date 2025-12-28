@@ -1,0 +1,144 @@
+name: UTMStack SIEM Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - prod
+          - test
+      instance_type:
+        description: 'Linode instance type'
+        required: false
+        type: choice
+        default: 'g6-standard-4'
+        options:
+          - 'g6-standard-2'
+          - 'g6-standard-4'
+          - 'g6-standard-6'
+          - 'g6-standard-8'
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/siem.ci.yml'
+      - 'SIEM/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/siem.ci.yml'
+      - 'SIEM/**'
+
+jobs:
+  deploy-siems-instance:
+    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment || 'test' }}
+      image: 'linode/ubuntu22.04'
+      region: 'in-maa'
+      instance_type: 'g6-linode-2'
+      application_name: 'nexsware-siems'
+      install_nginx: true
+      vpc_id: 322358
+      subnet_id: 356295
+      stackscript_id: '1980834'
+
+  install-siems:
+    needs: deploy-siems-instance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Wait for instance to be ready
+        run: sleep 30
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ needs.deploy-siems-instance.outputs.ip_address }} >> ~/.ssh/known_hosts
+
+      - name: Install Docker and Docker Compose
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
+            # Update system
+            apt-get update
+            apt-get upgrade -y
+
+            # Install Docker
+            apt-get install -y ca-certificates curl gnupg lsb-release
+            install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            chmod a+r /etc/apt/keyrings/docker.gpg
+
+            echo \
+              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+              $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            apt-get update
+            apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+            # Enable and start Docker
+            systemctl enable docker
+            systemctl start docker
+
+            # Verify installation
+            docker --version
+            docker compose version
+          EOF
+
+      - name: Deploy UTMStack Container
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
+            # Create UTMStack directory
+            mkdir -p /opt/utmstack
+            cd /opt/utmstack
+
+            # Download UTMStack installer
+            curl -fsSL https://raw.githubusercontent.com/utmstack/UTMStack/master/installer/install.sh -o install.sh
+            chmod +x install.sh
+
+            # Run UTMStack installer
+            # The installer will handle docker-compose setup and container deployment
+            bash install.sh
+
+            # Configure firewall to allow UTMStack ports
+            ufw --force enable
+            ufw allow 22/tcp          # SSH
+            ufw allow 443/tcp         # HTTPS (UTMStack UI)
+            ufw allow 9200/tcp        # Elasticsearch
+            ufw allow 5044/tcp        # Logstash
+            ufw reload
+          EOF
+
+      - name: Display deployment information
+        run: |
+          echo "========================================="
+          echo "UTMStack Deployment Complete!"
+          echo "========================================="
+          echo "Instance ID: ${{ needs.deploy-siems-instance.outputs.instance_id }}"
+          echo "IP Address: ${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo ""
+          echo "Access UTMStack UI at:"
+          echo "  https://${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo ""
+          echo "Default credentials can be found in:"
+          echo "  SSH to root@${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo "  Check /opt/utmstack/.env file"
+          echo "========================================="
+
+      - name: Health check
+        run: |
+          echo "Waiting for UTMStack services to be ready..."
+          sleep 60
+          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
+            cd /opt/utmstack
+            docker compose ps
+          EOF
