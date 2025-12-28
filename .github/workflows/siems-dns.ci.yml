@@ -1,0 +1,33 @@
+name: Deploy SIEMS DNS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - prod
+          - test
+
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/siems-dns.ci.yml'
+  
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/siems-dns.ci.yml'
+
+jobs:
+  deploy-dns:
+    uses: nexsware/modules/.github/workflows/deploy-dns.yml@main
+    secrets: inherit
+    with:
+      domain_id: 3394034
+      dns_records: '[{ name = "siems.nexsware.com", type = "A", value = "172.232.119.4" }, { name = "www.siems.nexsware.com", type = "A", value = "172.232.119.4" }]'
+      ttl_sec: 300
