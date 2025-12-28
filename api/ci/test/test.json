@@ -1,0 +1,10 @@
+{
+    "environment": "test",
+    "region": "in-maa",
+    "image": "linode/ubuntu24.04",
+    "instance_type": "g6-standard-2",
+    "server_name": "test-api.nexsware.com",
+    "stackscript_id": 1980834,
+    "vpc_id": 322358,
+    "subnet_id": 356295
+}

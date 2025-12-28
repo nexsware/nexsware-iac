@@ -1,0 +1,39 @@
+name: API Linode Instance Deployment
+
+
+on:
+  workflow_dispatch:
+    inputs:
+        environment:
+            description: 'Deployment environment'
+            required: true
+            type: choice
+            options:
+            - prod
+            - test
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/deploy.yml'
+      - 'api/test/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy.yml'
+      - 'api/prod/**'
+
+jobs:
+  deploy-linode-instance:
+    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment || 'test' }}
+      image: 'linode/ubuntu22.04'
+      region: 'in-maa'
+      instance_type: 'g6-standard-2'
+      application_name: 'nexsware-api'
+      install_nginx: false
+      vpc_id: 322358
+      subnet_id: 356295     
