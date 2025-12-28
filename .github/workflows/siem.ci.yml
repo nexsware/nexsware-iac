@@ -41,7 +41,7 @@ jobs:
       environment: ${{ inputs.environment || 'test' }}
       image: 'linode/ubuntu22.04'
       region: 'in-maa'
-      instance_type: 'g6-linode-2'
+      instance_type: 'g6-standard-1'
       application_name: 'nexsware-siems'
       install_nginx: true
       vpc_id: 322358
