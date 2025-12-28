@@ -44,6 +44,7 @@ jobs:
       instance_type: 'g6-standard-1'
       application_name: 'nexsware-siems'
       domains_containers: 'siems.nexsware.com'
+      server_name: 'siems.nexsware.com'
       install_nginx: true
       vpc_id: 322358
       subnet_id: 356295
