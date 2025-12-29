@@ -15,13 +15,13 @@ on:
     branches:
       - '**'
     paths:
-      - '.github/workflows/siems-dns.ci.yml'
+      - '.github/workflows/deploy-siems-dns.ci.yml'
   
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/siems-dns.ci.yml'
+      - '.github/workflows/deploy-siems-dns.ci.yml'
 
 jobs:
   deploy-dns:

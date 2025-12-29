@@ -24,13 +24,13 @@ on:
     branches:
       - '**'
     paths:
-      - '.github/workflows/siem.ci.yml'
+      - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/siem.ci.yml'
+      - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
 
 jobs:

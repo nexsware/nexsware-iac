@@ -14,12 +14,12 @@ on:
         branches:
         - '**'
         paths:
-        - '.github/workflows/siems-fwl.ci.yml'
+        - '.github/workflows/deploy-siems-fwl.ci.yml'
     push:
         branches:
         - main
         paths:
-        - '.github/workflows/siems-fwl.ci.yml'
+        - '.github/workflows/deploy-siems-fwl.ci.yml'
         
 jobs:
     deploy-firewall:
