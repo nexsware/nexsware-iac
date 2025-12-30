@@ -12,14 +12,12 @@ on:
     branches:
       - '**'
     paths:
-      - 'infrastructure/database/**'
-      - '.github/workflows/database-instance.ci.yml'
+      - '.github/workflows/deploy-database-instance.ci.yml'
   push:
     branches:
       - main
     paths:
-      - 'infrastructure/database/**'
-      - '.github/workflows/database-instance.ci.yml'
+      - '.github/workflows/deploy-database-instance.ci.yml'
 
 jobs:
   deploy-instance:
