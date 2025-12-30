@@ -34,3 +34,4 @@ jobs:
       postgres_user: 'postgres'
       container_name: 'nexsware-postgres'
       data_volume: 'nexsware-postgres-data' # Docker volume name for data persistence
+      ssh_user: 'root'
