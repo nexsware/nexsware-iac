@@ -1,0 +1,36 @@
+name: Deploy PostgreSQL Database
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - test
+          - prod
+    
+  pull_request:
+      branches:
+          - '**'
+      paths:
+          - '.github/workflows/deploy-postgres.ci.yml'
+  push:
+      branches:
+          - main
+      paths:
+          - '.github/workflows/deploy-postgres.ci.yml'
+
+jobs:
+  deploy-postgres:
+    uses: nexsware/modules/.github/workflows/deploy-postgres-docker.yml@main
+    secrets: inherit
+    with:
+      server_ip: '172.235.28.178'  # Database server public IP
+      vpc_ip: '10.0.0.2'  # Database server VPC private IP
+      postgres_version: '18'
+      postgres_db: 'nexsware-db'
+      postgres_user: 'postgres'
+      container_name: 'nexsware-postgres'
+      data_volume: 'nexsware-postgres-data'
