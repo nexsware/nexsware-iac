@@ -1,0 +1,35 @@
+name: Deploy Database server
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - test
+          - prod
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'infrastructure/database/**'
+      - '.github/workflows/database-instance.ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/database/**'
+      - '.github/workflows/database-instance.ci.yml'
+
+jobs:
+  deploy-instance:
+    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
+    secrets: inherit
+    with:
+      region: 'in-maa'
+      instance_type: 'g6-dedicated-2'
+      image: 'linode/ubuntu24.04'
+      environment: ${{ inputs.environment || 'test' }}
+      application_name: 'nexsware-databases'
+      vpc_id: '322358'
+      subnet_id: '356295'
