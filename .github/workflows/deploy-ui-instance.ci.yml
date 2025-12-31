@@ -33,8 +33,8 @@ jobs:
       instance_type: 'g6-standard-1'
       application_name: 'nexsware-ui'
       server_name: 'nexsware.com'
-      domains_containers: 'nexsware.com'
-      api_proxies: nexsware.com:/api/:http://10.0.0.3:8080
+      domains_containers: 'nexsware.com:3000'
+      api_proxies: "nexsware.com|/api/|http://10.0.0.3:8080"
       certbot_email: info@nexsware.com
       firewall_ids: '3640674'
       stackscript_id: 1980834
