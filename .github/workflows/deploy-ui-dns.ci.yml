@@ -31,5 +31,5 @@ jobs:
     secrets: inherit
     with:
       domain_id: 3394034
-      dns_records: '[{ name = "nexsware.com", type = "A", value = "172.232.107.171" }, { name = "www.nexsware.com", type = "A", value = "172.232.107.171" }]'
+      dns_records: '[{ name = "nexsware.com", type = "A", value = "172.232.123.52" }, { name = "www.nexsware.com", type = "A", value = "172.232.123.52" }]'
       ttl_sec: 300
