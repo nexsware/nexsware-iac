@@ -25,7 +25,5 @@ jobs:
         uses: nexsware/modules/.github/workflows/deploy-firewall.yml@main
         secrets: inherit
         with:
-            instance_id: "89359554"
+            firewall_label: "web-server-firewall"
             environment: "${{ inputs.environment || 'test' }}"
-            application_name: "nexsware-ui"
-            allow_ssh_from: "172.232.107.171/32"  # Your IP
