@@ -30,10 +30,10 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ inputs.environment || 'test' }}
-      image: 'linode/ubuntu22.04'
+      image: 'linode/ubuntu24.04'
       region: 'in-maa'
       instance_type: 'g6-standard-2'
       application_name: 'nexsware-api'
       install_nginx: false
-      vpc_id: 322358
-      subnet_id: 356295     
+      vpc_id: 322358 # vpc in in-maa region
+      subnet_id: 356295 # subnet in in-maa region
