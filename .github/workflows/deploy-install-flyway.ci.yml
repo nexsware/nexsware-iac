@@ -24,7 +24,7 @@ on:
 
 jobs:
   run-migrations:
-    uses: nexsware/modules/.github/workflows/run-flyway-migration.yml@main
+    uses: nexsware/modules/.github/workflows/deploy-install-flyway.yml@main
     with:
       environment: ${{ inputs.environment || 'test' }}
       database_host: "10.0.0.2"  # Your VPC IP
