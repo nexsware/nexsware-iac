@@ -15,12 +15,12 @@ on:
       branches: [ '**' ]
       paths:
         - database/sql/**
-        - '.github/workflows/flyway.ci.yml'
+        - '.github/workflows/deploy-install-flyway.ci.yml'
     push:
         branches: [main]
         paths:
           - 'database/sql/**'
-          - '.github/workflows/flyway.ci.yml'
+          - '.github/workflows/deploy-install-flyway.ci.yml'
 
 jobs:
   run-migrations:
