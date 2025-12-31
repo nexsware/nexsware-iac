@@ -1,5 +1,4 @@
-name: API Linode Instance Deployment
-
+name: Create API Linode Instance
 
 on:
   workflow_dispatch:

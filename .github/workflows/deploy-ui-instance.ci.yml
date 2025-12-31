@@ -31,7 +31,7 @@ jobs:
       image: 'linode/ubuntu24.04'
       region: 'in-maa'
       instance_type: 'g6-standard-1'
-      application_name: 'nexsware'
+      application_name: 'nexsware-ui'
       server_name: 'nexsware.com'
       domains_containers: 'nexsware.com'
       stackscript_id: 1980834
