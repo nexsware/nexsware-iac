@@ -1,0 +1,39 @@
+name: Deploy UI Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - prod
+          - test
+
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - '.github/workflows/deploy-ui-instance.ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/deploy-ui-instance.ci.yml'
+
+jobs:
+  deploy-instance:
+    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
+    secrets: inherit
+    with:
+      environment: ${{ inputs.environment || 'test' }}
+      image: 'linode/ubuntu24.04'
+      region: 'in-maa'
+      instance_type: 'g6-standard-1'
+      application_name: 'nexsware'
+      server_name: 'nexsware.com'
+      domains_containers: 'nexsware.com'
+      stackscript_id: 1980834
+      vpc_id: 322358 # vpc in in-maa region
+      subnet_id: 356295 # subnet in in-maa region
