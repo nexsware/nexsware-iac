@@ -34,6 +34,8 @@ jobs:
       application_name: 'nexsware-ui'
       server_name: 'nexsware.com'
       domains_containers: 'nexsware.com'
+      firewall_ids: '3640674'
       stackscript_id: 1980834
       vpc_id: 322358 # vpc in in-maa region
       subnet_id: 356295 # subnet in in-maa region
+      install_nginx: true
