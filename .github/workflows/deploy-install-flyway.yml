@@ -1,0 +1,31 @@
+name: Install Flyway
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: false
+                type: choice
+                options:
+                    - test
+                    - prod
+    pull_request:
+      branches: [ '**' ]
+      paths:
+        - database/sql/**
+        - '.github/workflows/deploy-install-flyway.ci.yml'
+    push:
+        branches: [main]
+        paths:
+          - 'database/sql/**'
+          - '.github/workflows/deploy-install-flyway.ci.yml'
+
+jobs:
+    run-migrations:
+        uses: nexsware/modules/.github/workflows/deploy-install-flyway.yml@main
+        secrets: inherit
+        with:
+          server_host: "172.235.28.178"  # Public IP of database server
+          server_user: "root"
+          flyway_version: "11.20.0"
