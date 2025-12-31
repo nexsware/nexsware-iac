@@ -25,7 +25,6 @@ on:
 jobs:
   run-migrations:
     uses: nexsware/modules/.github/workflows/deploy-run-migrations.yml@main
-    secrets: inherit
     with:
       environment: ${{ inputs.environment || 'test' }}
       database_host: "10.0.0.2"  # Your VPC IP
@@ -35,3 +34,7 @@ jobs:
       database_user: "postgres"
       migrations_path: "database/sql"  # Path in your repo
       flyway_command: "migrate"
+    secrets:
+      DATABASE_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
