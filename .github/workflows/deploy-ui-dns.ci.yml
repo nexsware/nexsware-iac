@@ -16,14 +16,14 @@ on:
       - '**'
     paths:
       - 'infrastructure/dns/**'
-      - '.github/workflows/dns.ci.yml'
+      - '.github/workflows/deploy-ui-dns.ci.yml'
   
   push:
     branches:
       - main
     paths:
       - 'infrastructure/dns/**'
-      - '.github/workflows/dns.ci.yml'
+      - '.github/workflows/deploy-ui-dns.ci.yml'
 
 jobs:
   deploy-dns:
