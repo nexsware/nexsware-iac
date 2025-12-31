@@ -1,5 +1,5 @@
 # In your app repository: .github/workflows/deploy.yml
-name: Deploy Database Migrations
+name: Deploy Install Flyway
 
 on:
     workflow_dispatch:
