@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS auth.userroles
 (
     userid   BIGINT NOT NULL,
     roleid   BIGINT NOT NULL,
-    CONSTRAINT userroles_userid_roleid_key UNIQUE (userid, roleid),
+    CONSTRAINT userroles_userid_roleid_key UNIQUE (userid, roleid)
 );
 
 
