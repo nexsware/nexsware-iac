@@ -42,23 +42,15 @@ CREATE TABLE IF NOT EXISTS auth.users
     passwordhash character varying(500) COLLATE pg_catalog."default",
     usernumber character varying(6) COLLATE pg_catalog."default",
     usertitle character varying(20) COLLATE pg_catalog."default",
-    CONSTRAINT users_pkey PRIMARY KEY (id),
-    CONSTRAINT users_usernumber_key UNIQUE (usernumber)
+
+    CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS auth.userroles (
-    id       BIGINT GENERATED ALWAYS AS IDENTITY,
-    userid   INTEGER NOT NULL,
-    roleid   INTEGER NOT NULL,
-
-    CONSTRAINT userroles_pkey PRIMARY KEY (id),
+CREATE TABLE IF NOT EXISTS auth.userroles
+(
+    userid   BIGINT NOT NULL,
+    roleid   BIGINT NOT NULL,
     CONSTRAINT userroles_userid_roleid_key UNIQUE (userid, roleid),
-
-    CONSTRAINT userroles_roleid_fkey
-        FOREIGN KEY (roleid) REFERENCES auth.roles(id) ON DELETE CASCADE,
-
-    CONSTRAINT userroles_userid_fkey
-        FOREIGN KEY (userid) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 
@@ -67,7 +59,7 @@ CREATE TABLE IF NOT EXISTS auth.userclaims (
     userid    BIGINT NOT NULL,
     claimtype VARCHAR(256),
     claimvalue VARCHAR(256),
+
     CONSTRAINT userclaims_pkey PRIMARY KEY (id),
-    CONSTRAINT userclaims_userid_fkey
-        FOREIGN KEY (userid) REFERENCES auth.users(id)
+    CONSTRAINT userclaims_userid_fkey FOREIGN KEY (userid) REFERENCES auth.users(id)
 );
