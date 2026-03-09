@@ -45,7 +45,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
             pkill -f installer 2>/dev/null || true
-            sleep 3
+            systemctl stop unattended-upgrades 2>/dev/null || true
+            pkill -f unattended-upgr 2>/dev/null || true
+            sleep 5
+            rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
+            dpkg --configure -a 2>/dev/null || true
             docker rm -f $(docker ps -aq) 2>/dev/null || true
             docker volume prune -f 2>/dev/null || true
             rm -f /tmp/installer /tmp/installer.pid /tmp/installer.log
