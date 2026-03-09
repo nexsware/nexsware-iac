@@ -58,8 +58,27 @@ jobs:
           ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
             wget -O /tmp/installer https://github.com/utmstack/UTMStack/releases/latest/download/installer
             chmod +x /tmp/installer
-            /tmp/installer
+            nohup /tmp/installer > /tmp/installer.log 2>&1 &
+            echo $! > /tmp/installer.pid
           EOF
+          echo "Waiting for UTMStack installer to complete..."
+          while true; do
+            sleep 60
+            STATUS=$(ssh -o StrictHostKeyChecking=no root@172.232.119.4 '
+              if kill -0 $(cat /tmp/installer.pid 2>/dev/null) 2>/dev/null; then
+                echo "running"
+              else
+                echo "done"
+              fi
+              tail -5 /tmp/installer.log
+            ')
+            echo "$STATUS"
+            if echo "$STATUS" | grep -q "^done"; then
+              break
+            fi
+          done
+          EXIT=$(ssh -o StrictHostKeyChecking=no root@172.232.119.4 'cat /tmp/installer.exit 2>/dev/null || echo 0')
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 'cat /tmp/installer.log'
 
       - name: Configure HTTPS
         run: |
