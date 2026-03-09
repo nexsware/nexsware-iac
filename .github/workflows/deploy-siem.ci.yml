@@ -10,7 +10,7 @@ on:
         options:
           - prod
           - test
-          
+
   pull_request:
     branches:
       - '**'
@@ -38,11 +38,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ vars.SIEMS_IP_ADDRESS }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H 172.232.119.4 >> ~/.ssh/known_hosts
 
       - name: Install Docker
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
             # Update system
             apt-get update
 
@@ -70,12 +70,12 @@ jobs:
 
       - name: Copy Dockerfile to instance
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} mkdir -p /opt/utmstack
-          scp -o StrictHostKeyChecking=no SIEM/Dockerfile root@${{ vars.SIEMS_IP_ADDRESS }}:/opt/utmstack/
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 mkdir -p /opt/utmstack
+          scp -o StrictHostKeyChecking=no SIEM/Dockerfile root@172.232.119.4:/opt/utmstack/
 
       - name: Build and Deploy UTMStack Container
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
             cd /opt/utmstack
 
             # Build the UTMStack image
@@ -116,10 +116,10 @@ jobs:
           echo "========================================="
           echo "UTMStack Deployment Complete!"
           echo "========================================="
-          echo "IP Address: ${{ vars.SIEMS_IP_ADDRESS }}"
+          echo "IP Address: 172.232.119.4"
           echo ""
           echo "Access UTMStack UI at:"
-          echo "  https://${{ vars.SIEMS_IP_ADDRESS }}"
+          echo "  https://172.232.119.4"
           echo ""
           echo "Container: nexsware-utmstack:latest"
           echo "========================================="
@@ -128,7 +128,7 @@ jobs:
         run: |
           echo "Waiting for UTMStack container to be ready..."
           sleep 60
-          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
             echo "Container status:"
             docker ps -a --filter name=utmstack
             echo ""
