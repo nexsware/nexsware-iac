@@ -44,8 +44,11 @@ jobs:
       - name: Cleanup existing installation
         run: |
           ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
+            pkill -f installer 2>/dev/null || true
+            sleep 3
             docker rm -f $(docker ps -aq) 2>/dev/null || true
             docker volume prune -f 2>/dev/null || true
+            rm -f /tmp/installer /tmp/installer.pid /tmp/installer.log
           EOF
 
       - name: Fix netplan configuration
