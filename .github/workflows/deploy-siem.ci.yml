@@ -29,6 +29,7 @@ on:
 jobs:
   install-siems:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,6 +59,17 @@ jobs:
             wget -O /tmp/installer https://github.com/utmstack/UTMStack/releases/latest/download/installer
             chmod +x /tmp/installer
             /tmp/installer
+          EOF
+
+      - name: Configure HTTPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
+            apt-get install -y certbot python3-certbot-nginx
+            printf 'server {\n    listen 80;\n    server_name siems.nexsware.com;\n    location / {\n        proxy_pass http://localhost:10001;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n    }\n}\n' > /etc/nginx/sites-available/utmstack
+            ln -sf /etc/nginx/sites-available/utmstack /etc/nginx/sites-enabled/utmstack
+            rm -f /etc/nginx/sites-enabled/default
+            nginx -t && systemctl reload nginx
+            certbot --nginx -d siems.nexsware.com --non-interactive --agree-tos -m admin@nexsware.com
           EOF
 
       - name: Display deployment information
