@@ -10,22 +10,14 @@ on:
         options:
           - prod
           - test
-      instance_type:
-        description: 'Linode instance type'
-        required: false
-        type: choice
-        default: 'g6-standard-4'
-        options:
-          - 'g6-standard-2'
-          - 'g6-standard-4'
-          - 'g6-standard-6'
-          - 'g6-standard-8'
+          
   pull_request:
     branches:
       - '**'
     paths:
       - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
+  
   push:
     branches:
       - main
@@ -33,42 +25,24 @@ on:
       - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
 
-jobs:
-  deploy-siems-instance:
-    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
-    secrets: inherit
-    with:
-      environment: ${{ inputs.environment || 'test' }}
-      image: 'linode/ubuntu22.04'
-      region: 'in-maa'
-      instance_type: 'g6-standard-1'
-      application_name: 'nexsware-siems'
-      domains_containers: 'siems.nexsware.com'
-      install_nginx: true
-      vpc_id: 322358
-      subnet_id: 356295
-      stackscript_id: '1980834'
 
+jobs:
   install-siems:
-    needs: deploy-siems-instance
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Wait for instance to be ready
-        run: sleep 30
 
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ needs.deploy-siems-instance.outputs.ip_address }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ vars.SIEMS_IP_ADDRESS }} >> ~/.ssh/known_hosts
 
       - name: Install Docker
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
             # Update system
             apt-get update
 
@@ -96,20 +70,19 @@ jobs:
 
       - name: Copy Dockerfile to instance
         run: |
-          scp -o StrictHostKeyChecking=no SIEM/Dockerfile root@${{ needs.deploy-siems-instance.outputs.ip_address }}:/root/
+          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} mkdir -p /opt/utmstack
+          scp -o StrictHostKeyChecking=no SIEM/Dockerfile root@${{ vars.SIEMS_IP_ADDRESS }}:/opt/utmstack/
 
       - name: Build and Deploy UTMStack Container
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
-            # Create UTMStack directory
-            mkdir -p /opt/utmstack
+          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
             cd /opt/utmstack
-
-            # Copy Dockerfile
-            cp /root/Dockerfile .
 
             # Build the UTMStack image
             docker build -t nexsware-utmstack:latest .
+
+            # Remove existing container if present
+            docker rm -f utmstack 2>/dev/null || true
 
             # Run the UTMStack container
             docker run -d \
@@ -143,11 +116,10 @@ jobs:
           echo "========================================="
           echo "UTMStack Deployment Complete!"
           echo "========================================="
-          echo "Instance ID: ${{ needs.deploy-siems-instance.outputs.instance_id }}"
-          echo "IP Address: ${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo "IP Address: ${{ vars.SIEMS_IP_ADDRESS }}"
           echo ""
           echo "Access UTMStack UI at:"
-          echo "  https://${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo "  https://${{ vars.SIEMS_IP_ADDRESS }}"
           echo ""
           echo "Container: nexsware-utmstack:latest"
           echo "========================================="
@@ -156,7 +128,7 @@ jobs:
         run: |
           echo "Waiting for UTMStack container to be ready..."
           sleep 60
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@${{ vars.SIEMS_IP_ADDRESS }} << 'EOF'
             echo "Container status:"
             docker ps -a --filter name=utmstack
             echo ""
