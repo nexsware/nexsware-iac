@@ -39,11 +39,11 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 172.232.119.4 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 187.124.148.26 >> ~/.ssh/known_hosts
 
       - name: Cleanup existing installation
         run: |
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
             pkill -f installer 2>/dev/null || true
             sleep 3
             docker rm -f $(docker ps -aq) 2>/dev/null || true
@@ -53,41 +53,39 @@ jobs:
 
       - name: Fix netplan configuration
         run: |
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 \
+          ssh -o StrictHostKeyChecking=no root@187.124.148.26 \
             'printf "network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    eth0:\n      dhcp4: true\n" > /etc/netplan/01-netcfg.yaml && chmod 600 /etc/netplan/*.yaml && netplan apply'
 
       - name: Install UTMStack
         run: |
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
             wget -O /tmp/installer https://github.com/utmstack/UTMStack/releases/latest/download/installer
             chmod +x /tmp/installer
             nohup /tmp/installer > /tmp/installer.log 2>&1 &
             echo $! > /tmp/installer.pid
           EOF
-          echo "Waiting for UTMStack installer to complete..."
-          while true; do
+          echo "Waiting for UTMStack services to be ready..."
+          for i in $(seq 1 30); do
             sleep 60
-            STATUS=$(ssh -o StrictHostKeyChecking=no root@172.232.119.4 '
-              if kill -0 $(cat /tmp/installer.pid 2>/dev/null) 2>/dev/null; then
-                echo "running"
-              else
-                echo "done"
-              fi
-              tail -5 /tmp/installer.log
+            echo "Check $i/30..."
+            READY=$(ssh -o StrictHostKeyChecking=no root@187.124.148.26 '
+              TOTAL=$(docker service ls --format "{{.Replicas}}" | grep -c "1/1" || true)
+              echo $TOTAL
             ')
-            echo "$STATUS"
-            if echo "$STATUS" | grep -q "^done"; then
+            echo "Services running 1/1: $READY"
+            if [ "$READY" -ge 7 ]; then
+              echo "All UTMStack services are ready!"
               break
             fi
           done
-          EXIT=$(ssh -o StrictHostKeyChecking=no root@172.232.119.4 'cat /tmp/installer.exit 2>/dev/null || echo 0')
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 'cat /tmp/installer.log'
+          ssh -o StrictHostKeyChecking=no root@187.124.148.26 'docker service ls'
 
       - name: Configure HTTPS
         run: |
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+            ufw allow 80/tcp && ufw allow 443/tcp && ufw reload
             apt-get install -y certbot python3-certbot-nginx
-            printf 'server {\n    listen 80;\n    server_name siems.nexsware.com;\n    location / {\n        proxy_pass http://localhost:10001;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n    }\n}\n' > /etc/nginx/sites-available/utmstack
+            printf 'server {\n    listen 80;\n    server_name siems.nexsware.com;\n    location / {\n        proxy_pass http://localhost:10001;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n        proxy_set_header X-Shared-Key iBg6CdG78inK0NEY88nEmh2BaFnFLiP8;\n        proxy_read_timeout 900;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header Connection $http_connection;\n    }\n}\n' > /etc/nginx/sites-available/utmstack
             ln -sf /etc/nginx/sites-available/utmstack /etc/nginx/sites-enabled/utmstack
             rm -f /etc/nginx/sites-enabled/default
             nginx -t && systemctl reload nginx
@@ -99,8 +97,8 @@ jobs:
           echo "========================================="
           echo "UTMStack Deployment Complete!"
           echo "========================================="
-          echo "IP Address: 172.232.119.4"
+          echo "IP Address: 187.124.148.26"
           echo ""
           echo "Access UTMStack UI at:"
-          echo "  https://172.232.119.4"
+          echo "  https://187.124.148.26"
           echo "========================================="
