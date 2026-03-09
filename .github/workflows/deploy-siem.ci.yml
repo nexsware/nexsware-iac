@@ -47,11 +47,10 @@ jobs:
             docker volume prune -f 2>/dev/null || true
           EOF
 
-      - name: Fix netplan permissions
+      - name: Fix netplan configuration
         run: |
-          ssh -o StrictHostKeyChecking=no root@172.232.119.4 << 'EOF'
-            chmod 600 /etc/netplan/*.yaml
-          EOF
+          ssh -o StrictHostKeyChecking=no root@172.232.119.4 \
+            'printf "network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    eth0:\n      dhcp4: true\n" > /etc/netplan/01-netcfg.yaml && chmod 600 /etc/netplan/*.yaml && netplan apply'
 
       - name: Install UTMStack
         run: |
