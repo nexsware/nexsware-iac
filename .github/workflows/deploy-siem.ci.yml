@@ -101,6 +101,7 @@ jobs:
           systemctl restart docker
           sleep 15
           systemctl is-active docker
+          docker swarm init 2>/dev/null || docker swarm init --force-new-cluster 2>/dev/null || true
           EOF
 
       - name: Install UTMStack
