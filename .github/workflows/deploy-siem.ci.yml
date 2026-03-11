@@ -51,14 +51,20 @@ jobs:
           rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
           dpkg --configure -a 2>/dev/null || true
 
-          if docker stack ls 2>/dev/null | grep -q utmstack || systemctl is-active --quiet utmstack-updater 2>/dev/null; then
+          if docker stack ls 2>/dev/null | grep -q utmstack \
+            || systemctl list-units --all 2>/dev/null | grep -qi utmstack \
+            || ls /etc/systemd/system/UTMStack* 2>/dev/null \
+            || ls /usr/local/bin/utmstack* 2>/dev/null; then
             echo "Existing UTMStack installation found, removing..."
 
             pkill -f installer 2>/dev/null || true
 
-            systemctl stop UTMStackComponentsUpdater 2>/dev/null || true
-            systemctl disable UTMStackComponentsUpdater 2>/dev/null || true
-            rm -f /etc/systemd/system/UTMStackComponentsUpdater.service
+            systemctl stop UTMStackAgent UTMStackUpdater UTMStackComponentsUpdater 2>/dev/null || true
+            systemctl disable UTMStackAgent UTMStackUpdater UTMStackComponentsUpdater 2>/dev/null || true
+            rm -f /etc/systemd/system/UTMStackAgent.service \
+                  /etc/systemd/system/UTMStackUpdater.service \
+                  /etc/systemd/system/UTMStackComponentsUpdater.service
+            rm -f /usr/local/bin/utmstack_installer /root/agent_installer
             systemctl daemon-reload 2>/dev/null || true
 
             docker stack rm utmstack 2>/dev/null || true
