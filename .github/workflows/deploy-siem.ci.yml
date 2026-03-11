@@ -92,6 +92,15 @@ jobs:
             apt-get remove --purge -y nginx nginx-common nginx-full 2>/dev/null || true
             rm -rf /etc/nginx 2>/dev/null || true
 
+            # Remove letsencrypt certs so installer regenerates them cleanly
+            rm -rf /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt 2>/dev/null || true
+
+            # Remove containerd image/layer data so installer pulls fresh images
+            systemctl stop containerd 2>/dev/null || true
+            rm -rf /var/lib/containerd 2>/dev/null || true
+            systemctl start containerd 2>/dev/null || true
+            sleep 5
+
             echo "Existing installation removed."
           else
             echo "No existing UTMStack installation found, skipping cleanup."
