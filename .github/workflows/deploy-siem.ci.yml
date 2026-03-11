@@ -56,9 +56,9 @@ jobs:
 
             pkill -f installer 2>/dev/null || true
 
-            systemctl stop utmstack-updater 2>/dev/null || true
-            systemctl disable utmstack-updater 2>/dev/null || true
-            rm -f /etc/systemd/system/utmstack-updater.service
+            systemctl stop UTMStackComponentsUpdater 2>/dev/null || true
+            systemctl disable UTMStackComponentsUpdater 2>/dev/null || true
+            rm -f /etc/systemd/system/UTMStackComponentsUpdater.service
             systemctl daemon-reload 2>/dev/null || true
 
             docker stack rm utmstack 2>/dev/null || true
