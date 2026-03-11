@@ -77,8 +77,8 @@ jobs:
             docker swarm leave --force 2>/dev/null || true
 
             rm -rf /etc/utmstack /opt/utmstack /var/lib/utmstack 2>/dev/null || true
-            rm -f /etc/nginx/sites-enabled/utmstack /etc/nginx/sites-available/utmstack
-            systemctl reload nginx 2>/dev/null || true
+            apt-get remove --purge -y nginx nginx-common nginx-full 2>/dev/null || true
+            rm -rf /etc/nginx 2>/dev/null || true
 
             echo "Existing installation removed."
           else
@@ -101,7 +101,7 @@ jobs:
           systemctl restart docker
           sleep 15
           systemctl is-active docker
-          docker swarm init 2>/dev/null || docker swarm init --force-new-cluster 2>/dev/null || true
+          docker swarm leave --force 2>/dev/null || true
           EOF
 
       - name: Install UTMStack
