@@ -44,9 +44,6 @@ jobs:
       - name: Cleanup existing installation
         run: |
           ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
-          # Stop any running installer
-          pkill -f installer 2>/dev/null || true
-
           # Stop unattended-upgrades to release apt lock
           systemctl stop unattended-upgrades 2>/dev/null || true
           pkill -f unattended-upgr 2>/dev/null || true
@@ -54,37 +51,34 @@ jobs:
           rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
           dpkg --configure -a 2>/dev/null || true
 
-          # Stop UTMStack updater service if installed
-          systemctl stop utmstack-updater 2>/dev/null || true
-          systemctl disable utmstack-updater 2>/dev/null || true
-          rm -f /etc/systemd/system/utmstack-updater.service
-          systemctl daemon-reload 2>/dev/null || true
+          if docker stack ls 2>/dev/null | grep -q utmstack || systemctl is-active --quiet utmstack-updater 2>/dev/null; then
+            echo "Existing UTMStack installation found, removing..."
 
-          # Remove Docker Swarm stack and wait for full removal
-          docker stack rm utmstack 2>/dev/null || true
-          sleep 30
+            pkill -f installer 2>/dev/null || true
 
-          # Force remove any remaining containers
-          docker rm -f $(docker ps -aq) 2>/dev/null || true
+            systemctl stop utmstack-updater 2>/dev/null || true
+            systemctl disable utmstack-updater 2>/dev/null || true
+            rm -f /etc/systemd/system/utmstack-updater.service
+            systemctl daemon-reload 2>/dev/null || true
 
-          # Remove all UTMStack volumes
-          docker volume rm $(docker volume ls -q -f name=utmstack) 2>/dev/null || true
-          docker volume prune -f 2>/dev/null || true
+            docker stack rm utmstack 2>/dev/null || true
+            sleep 30
 
-          # Remove UTMStack overlay networks
-          docker network rm $(docker network ls -q -f name=utmstack) 2>/dev/null || true
+            docker rm -f $(docker ps -aq) 2>/dev/null || true
+            docker volume rm $(docker volume ls -q -f name=utmstack) 2>/dev/null || true
+            docker volume prune -f 2>/dev/null || true
+            docker network rm $(docker network ls -q -f name=utmstack) 2>/dev/null || true
+            docker swarm leave --force 2>/dev/null || true
 
-          # Leave and rejoin swarm to ensure clean state
-          docker swarm leave --force 2>/dev/null || true
+            rm -rf /etc/utmstack /opt/utmstack /var/lib/utmstack 2>/dev/null || true
+            rm -f /etc/nginx/sites-enabled/utmstack /etc/nginx/sites-available/utmstack
+            systemctl reload nginx 2>/dev/null || true
 
-          # Remove UTMStack config and data directories
-          rm -rf /etc/utmstack /opt/utmstack /var/lib/utmstack 2>/dev/null || true
+            echo "Existing installation removed."
+          else
+            echo "No existing UTMStack installation found, skipping cleanup."
+          fi
 
-          # Remove nginx UTMStack config
-          rm -f /etc/nginx/sites-enabled/utmstack /etc/nginx/sites-available/utmstack
-          systemctl reload nginx 2>/dev/null || true
-
-          # Clean up installer artifacts
           rm -f /tmp/installer /tmp/installer.pid /tmp/installer.log
           EOF
 
