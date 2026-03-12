@@ -39,11 +39,11 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.SIEM_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 187.124.148.26 >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keyscan -H 187.124.153.197 >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Cleanup existing installation
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
           # Stop unattended-upgrades to release apt lock
           systemctl stop unattended-upgrades 2>/dev/null || true
           pkill -f unattended-upgr 2>/dev/null || true
@@ -112,12 +112,12 @@ jobs:
 
       - name: Fix netplan configuration
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 \
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 \
             'printf "network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    eth0:\n      dhcp4: true\n" > /etc/netplan/01-netcfg.yaml && chmod 600 /etc/netplan/*.yaml && netplan apply'
 
       - name: Fix iptables for Docker Swarm on Ubuntu 24.04
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
           update-alternatives --set iptables /usr/sbin/iptables-legacy
           update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
           systemctl restart docker
@@ -128,7 +128,7 @@ jobs:
 
       - name: Install UTMStack
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
           wget -q -O /tmp/installer https://github.com/utmstack/UTMStack/releases/latest/download/installer
           chmod +x /tmp/installer
           nohup /tmp/installer --install > /tmp/installer.log 2>&1 &
@@ -138,7 +138,7 @@ jobs:
           for i in $(seq 1 30); do
             sleep 60
             echo "Check $i/30..."
-            STATUS=$(ssh -o StrictHostKeyChecking=no root@187.124.148.26 '
+            STATUS=$(ssh -o StrictHostKeyChecking=no root@187.124.153.197 '
               if grep -q "error installing UTMStack" /tmp/installer.log 2>/dev/null; then
                 echo "FAILED"
               else
@@ -148,7 +148,7 @@ jobs:
             echo "Status: $STATUS"
             if [ "$STATUS" = "FAILED" ]; then
               echo "UTMStack installer failed!"
-              ssh -o StrictHostKeyChecking=no root@187.124.148.26 'tail -20 /tmp/installer.log'
+              ssh -o StrictHostKeyChecking=no root@187.124.153.197 'tail -20 /tmp/installer.log'
               exit 1
             fi
             if [ "$STATUS" -ge 7 ] 2>/dev/null; then
@@ -156,11 +156,11 @@ jobs:
               break
             fi
           done
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 'docker service ls'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 'docker service ls'
 
       - name: Open firewall ports
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
           # Disable IPv6 rules in UFW
           sed -i 's/^IPV6=yes/IPV6=no/' /etc/default/ufw
           ufw allow 22/tcp
@@ -178,7 +178,7 @@ jobs:
 
       - name: Configure HTTPS
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
           set -e
           apt-get update -qq
           apt-get install -y -qq certbot python3-certbot-nginx
@@ -213,7 +213,7 @@ jobs:
 
       - name: Reset admin credentials
         run: |
-          ssh -o StrictHostKeyChecking=no root@187.124.148.26 'bash -s' << 'EOF'
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 'bash -s' << 'EOF'
           CONTAINER=$(docker ps -q -f name=utmstack_postgres)
           HASH=$(python3 -c "
           import bcrypt
