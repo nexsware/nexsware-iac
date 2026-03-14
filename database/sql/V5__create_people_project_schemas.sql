@@ -1,0 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS people
+    AUTHORIZATION "postgres";
+
+CREATE SCHEMA IF NOT EXISTS projects
+    AUTHORIZATION "postgres";

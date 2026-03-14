@@ -1,0 +1,4 @@
+ALTER TABLE IF EXISTS enquiries.contactmessages
+    ADD COLUMN createdby VARCHAR(10) NOT NULL,
+    ADD COLUMN updatedby VARCHAR(10) NOT NULL,
+    ADD COLUMN updatedat TIMESTAMPTZ NOT NULL DEFAULT now();
