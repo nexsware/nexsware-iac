@@ -33,7 +33,7 @@ jobs:
       database_name: "nexsware-db"
       database_user: "postgres"
       migrations_path: "database/sql"  # Path in your repo
-      flyway_command: "repair"  # Commands to run
+      flyway_command: "migrate"  # Commands to run
     secrets:
       DATABASE_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
