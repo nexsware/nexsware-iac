@@ -1,4 +1,4 @@
-CREATE TABLE IF EXISTS people.addresses (
+CREATE TABLE IF NOT EXISTS people.addresses (
     id               BIGINT GENERATED ALWAYS AS IDENTITY,
     countryname      VARCHAR(500) NOT NULL,
     stateName        VARCHAR(500) NOT NULL,
