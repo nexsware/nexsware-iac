@@ -11,7 +11,7 @@ CREATE TABLE IF EXISTS people.addresses (
     updatedat        TIMESTAMPTZ NOT NULL DEFAULT now(),
     updatedby        VARCHAR(10),
 
-    CONSTRAINT addresses_pkey PRIMARY KEY (id),
+    CONSTRAINT addresses_pkey PRIMARY KEY (id)
 
 );
 
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS people.clients (
 );
 
 
-CREATE TABLE projects.projects
+CREATE TABLE IF NOT EXISTS projects.projects
 (
     id                  BIGINT                      NOT NULL    GENERATED ALWAYS AS IDENTITY,
     universalid         UUID                        NOT NULL    DEFAULT gen_random_uuid(),
@@ -163,9 +163,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_universalid
     ON projects.projects (universalid); 
 
 
--- V{version}__create_projects_milestones.sql
-
-CREATE TABLE projects.milestones
+CREATE TABLE IF NOT EXISTS projects.milestones
 (
     id              BIGINT          NOT NULL    GENERATED ALWAYS AS IDENTITY,
     universalid     UUID            NOT NULL    DEFAULT gen_random_uuid(),
@@ -200,9 +198,7 @@ CREATE INDEX IF NOT EXISTS idx_milestones_universalid
     ON projects.milestones (universalid);
 
 
--- V{version}__create_projects_features.sql
-
-CREATE TABLE projects.features
+CREATE TABLE IF NOT EXISTS projects.features
 (
     id              BIGINT          NOT NULL    GENERATED ALWAYS AS IDENTITY,
     universalid     UUID            NOT NULL    DEFAULT gen_random_uuid(),
@@ -239,9 +235,7 @@ CREATE INDEX IF NOT EXISTS idx_features_universalid
     ON projects.features (universalid);
 
 
--- V{version}__create_projects_documents.sql
-
-CREATE TABLE projects.documents
+CREATE TABLE IF NOT EXISTS projects.documents
 (
     id              BIGINT          NOT NULL    GENERATED ALWAYS AS IDENTITY,
     universalid     UUID            NOT NULL    DEFAULT gen_random_uuid(),
