@@ -1,6 +1,6 @@
 -- Generate a new random employee ID 
 
-CREATE OR REPLACE FUNCTION generate_unique_employee_id()
+CREATE OR REPLACE FUNCTION people.generate_unique_employee_id()
 RETURNS VARCHAR(12) AS $$
 DECLARE
     new_id VARCHAR(12);
