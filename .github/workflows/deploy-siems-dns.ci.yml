@@ -29,5 +29,5 @@ jobs:
     secrets: inherit
     with:
       domain_id: 3394034
-      dns_records: '[{ name = "siems.nexsware.com", type = "A", value = "187.124.148.26" }, { name = "www.siems.nexsware.com", type = "A", value = "187.124.148.26" }]'
+      dns_records: '[{ name = "siems.nexsware.com", type = "A", value = "187.124.153.197" }, { name = "www.siems.nexsware.com", type = "A", value = "187.124.153.197" }]'
       ttl_sec: 300
