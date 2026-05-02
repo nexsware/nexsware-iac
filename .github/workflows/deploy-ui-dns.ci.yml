@@ -1,4 +1,4 @@
-name: Deploy SIEMS DNS
+name: Deploy DNS
 
 on:
   workflow_dispatch:
@@ -15,13 +15,15 @@ on:
     branches:
       - '**'
     paths:
-      - '.github/workflows/deploy-siems-dns.ci.yml'
+      - 'infrastructure/dns/**'
+      - '.github/workflows/deploy-ui-dns.ci.yml'
   
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/deploy-siems-dns.ci.yml'
+      - 'infrastructure/dns/**'
+      - '.github/workflows/deploy-ui-dns.ci.yml'
 
 jobs:
   deploy-dns:
@@ -29,5 +31,5 @@ jobs:
     secrets: inherit
     with:
       domain_id: 3394034
-      dns_records: '[{ name = "siems.nexsware.com", type = "A", value = "187.124.153.197" }, { name = "www.siems.nexsware.com", type = "A", value = "187.124.153.197" }]'
+      dns_records: '[{ name = "nexsware.com", type = "A", value = "172.232.111.148" }, { name = "www.nexsware.com", type = "A", value = "172.232.111.148" }]'
       ttl_sec: 300

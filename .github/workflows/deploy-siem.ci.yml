@@ -10,22 +10,14 @@ on:
         options:
           - prod
           - test
-      instance_type:
-        description: 'Linode instance type'
-        required: false
-        type: choice
-        default: 'g6-standard-4'
-        options:
-          - 'g6-standard-2'
-          - 'g6-standard-4'
-          - 'g6-standard-6'
-          - 'g6-standard-8'
+
   pull_request:
     branches:
       - '**'
     paths:
       - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
+
   push:
     branches:
       - main
@@ -33,109 +25,206 @@ on:
       - '.github/workflows/deploy-siem.ci.yml'
       - 'SIEM/**'
 
-jobs:
-  deploy-siems-instance:
-    uses: nexsware/modules/.github/workflows/deploy-instance.yml@main
-    secrets: inherit
-    with:
-      environment: ${{ inputs.environment || 'test' }}
-      image: 'linode/ubuntu22.04'
-      region: 'in-maa'
-      instance_type: 'g6-standard-1'
-      application_name: 'nexsware-siems'
-      domains_containers: 'siems.nexsware.com'
-      install_nginx: true
-      vpc_id: 322358
-      subnet_id: 356295
-      stackscript_id: '1980834'
 
+jobs:
   install-siems:
-    needs: deploy-siems-instance
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Wait for instance to be ready
-        run: sleep 30
-
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "${{ secrets.SIEM_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ needs.deploy-siems-instance.outputs.ip_address }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H 187.124.153.197 >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: Install Docker
+      - name: Cleanup existing installation
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
-            # Update system
-            apt-get update
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
+          # Stop unattended-upgrades to release apt lock
+          systemctl stop unattended-upgrades 2>/dev/null || true
+          pkill -f unattended-upgr 2>/dev/null || true
+          sleep 5
+          rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
+          dpkg --configure -a 2>/dev/null || true
 
-            # Install Docker
-            apt-get install -y ca-certificates curl gnupg lsb-release
-            install -m 0755 -d /etc/apt/keyrings
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-            chmod a+r /etc/apt/keyrings/docker.gpg
+          if docker stack ls 2>/dev/null | grep -q utmstack \
+            || systemctl list-units --all 2>/dev/null | grep -qi utmstack \
+            || ls /etc/systemd/system/UTMStack* 2>/dev/null \
+            || ls /usr/local/bin/utmstack* 2>/dev/null; then
+            echo "Existing UTMStack installation found, removing..."
 
-            echo \
-              "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-              $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            pkill -f installer 2>/dev/null || true
+            /usr/local/bin/utmstack_installer --uninstall 2>/dev/null || true
 
-            apt-get update
-            apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            systemctl stop UTMStackAgent UTMStackUpdater UTMStackComponentsUpdater 2>/dev/null || true
+            systemctl disable UTMStackAgent UTMStackUpdater UTMStackComponentsUpdater 2>/dev/null || true
+            rm -f /etc/systemd/system/UTMStackAgent.service \
+                  /etc/systemd/system/UTMStackUpdater.service \
+                  /etc/systemd/system/UTMStackComponentsUpdater.service
+            rm -f /usr/local/bin/utmstack_installer /root/agent_installer
+            systemctl daemon-reload 2>/dev/null || true
+            systemctl reset-failed UTMStackAgent UTMStackUpdater UTMStackComponentsUpdater 2>/dev/null || true
 
-            # Enable and start Docker
-            systemctl enable docker
+            docker stack rm utmstack 2>/dev/null || true
+            sleep 30
+
+            docker rm -f $(docker ps -aq) 2>/dev/null || true
+            docker volume rm $(docker volume ls -q -f name=utmstack) 2>/dev/null || true
+            docker volume prune -f 2>/dev/null || true
+            docker network rm $(docker network ls -q -f name=utmstack) 2>/dev/null || true
+            docker swarm leave --force 2>/dev/null || true
+            docker image prune -af 2>/dev/null || true
+
+            # Completely reinstall Docker to ensure clean state
+            systemctl stop docker docker.socket 2>/dev/null || true
+            apt-get remove --purge -y docker-ce docker-ce-cli docker-ce-rootless-extras \
+              docker-buildx-plugin docker-compose-plugin 2>/dev/null || true
+            rm -rf /var/lib/docker /etc/docker /run/docker /var/run/docker.sock
+            apt-get install -y docker-ce docker-ce-cli docker-ce-rootless-extras \
+              docker-buildx-plugin docker-compose-plugin
             systemctl start docker
+            sleep 10
 
-            # Verify installation
-            docker --version
-            docker compose version
+            rm -rf /utmstack /etc/utmstack /opt/utmstack /var/lib/utmstack 2>/dev/null || true
+            apt-get remove --purge -y nginx nginx-common nginx-full 2>/dev/null || true
+            rm -rf /etc/nginx 2>/dev/null || true
+
+            # Remove letsencrypt certs so installer regenerates them cleanly
+            rm -rf /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt 2>/dev/null || true
+
+            # Remove containerd image/layer data so installer pulls fresh images
+            systemctl stop containerd 2>/dev/null || true
+            rm -rf /var/lib/containerd 2>/dev/null || true
+            systemctl start containerd 2>/dev/null || true
+            sleep 5
+
+            echo "Existing installation removed."
+          else
+            echo "No existing UTMStack installation found, skipping cleanup."
+          fi
+
+          rm -f /tmp/installer /tmp/installer.pid /tmp/installer.log
           EOF
 
-      - name: Copy Dockerfile to instance
+      - name: Fix netplan configuration
         run: |
-          scp -o StrictHostKeyChecking=no SIEM/Dockerfile root@${{ needs.deploy-siems-instance.outputs.ip_address }}:/root/
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 \
+            'printf "network:\n  version: 2\n  renderer: networkd\n  ethernets:\n    eth0:\n      dhcp4: true\n" > /etc/netplan/01-netcfg.yaml && chmod 600 /etc/netplan/*.yaml && netplan apply'
 
-      - name: Build and Deploy UTMStack Container
+      - name: Fix iptables for Docker Swarm on Ubuntu 24.04
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
-            # Create UTMStack directory
-            mkdir -p /opt/utmstack
-            cd /opt/utmstack
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
+          update-alternatives --set iptables /usr/sbin/iptables-legacy
+          update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+          systemctl restart docker
+          sleep 15
+          systemctl is-active docker
+          docker swarm leave --force 2>/dev/null || true
+          EOF
 
-            # Copy Dockerfile
-            cp /root/Dockerfile .
+      - name: Install UTMStack
+        run: |
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
+          wget -q -O /tmp/installer https://github.com/utmstack/UTMStack/releases/latest/download/installer
+          chmod +x /tmp/installer
+          nohup /tmp/installer --install > /tmp/installer.log 2>&1 &
+          echo $! > /tmp/installer.pid
+          EOF
+          echo "Waiting for UTMStack services to be ready..."
+          for i in $(seq 1 30); do
+            sleep 60
+            echo "Check $i/30..."
+            STATUS=$(ssh -o StrictHostKeyChecking=no root@187.124.153.197 '
+              if grep -q "error installing UTMStack" /tmp/installer.log 2>/dev/null; then
+                echo "FAILED"
+              else
+                docker service ls --format "{{.Replicas}}" 2>/dev/null | grep -c "1/1" || echo 0
+              fi
+            ')
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "FAILED" ]; then
+              echo "UTMStack installer failed!"
+              ssh -o StrictHostKeyChecking=no root@187.124.153.197 'tail -20 /tmp/installer.log'
+              exit 1
+            fi
+            if [ "$STATUS" -ge 7 ] 2>/dev/null; then
+              echo "All UTMStack services are ready!"
+              break
+            fi
+          done
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 'docker service ls'
 
-            # Build the UTMStack image
-            docker build -t nexsware-utmstack:latest .
+      - name: Open firewall ports
+        run: |
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
+          # Disable IPv6 rules in UFW
+          sed -i 's/^IPV6=yes/IPV6=no/' /etc/default/ufw
+          ufw allow 22/tcp
+          ufw allow 80/tcp
+          ufw allow 443/tcp
+          ufw allow from 172.232.122.116/32 to any port 9000 proto tcp
+          ufw allow from 172.232.122.116/32 to any port 9001 proto tcp
+          ufw allow from 172.232.122.116/32 to any port 50051 proto tcp
+          ufw allow 8080/tcp
+          ufw allow 8000/tcp
+          ufw allow 9200/tcp
+          ufw --force enable
+          ufw reload
+          EOF
 
-            # Run the UTMStack container
-            docker run -d \
-              --name utmstack \
-              --restart unless-stopped \
-              --privileged \
-              -p 443:443 \
-              -p 9200:9200 \
-              -p 5044:5044 \
-              -p 514:514/udp \
-              -p 514:514/tcp \
-              -v utmstack-data:/opt/utmstack/data \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              nexsware-utmstack:latest
+      - name: Configure HTTPS
+        run: |
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 << 'EOF'
+          set -e
+          apt-get update -qq
+          apt-get install -y -qq certbot python3-certbot-nginx
 
-            # Configure firewall to allow UTMStack ports
-            ufw --force enable
-            ufw allow 22/tcp          # SSH
-            ufw allow 443/tcp         # HTTPS (UTMStack UI)
-            ufw allow 9200/tcp        # Elasticsearch
-            ufw allow 5044/tcp        # Logstash
-            ufw allow 514/tcp         # Syslog TCP
-            ufw allow 514/udp         # Syslog UDP
-            ufw reload
+          FRONTEND_CID=$(docker ps -q --filter "name=utmstack_frontend")
+          SHARED_KEY=$(docker exec "$FRONTEND_CID" grep -oP '(?<=set \$shared_key )[^;]+' /etc/nginx/conf.d/00_nginx_panel.conf)
 
-            echo "UTMStack container deployed successfully"
+          cat > /etc/nginx/sites-available/siems.nexsware.com << NGINXCONF
+          server {
+              listen 80;
+              server_name siems.nexsware.com;
+              location / {
+                  proxy_pass http://localhost:10001;
+                  proxy_set_header Host \$host;
+                  proxy_set_header X-Real-IP \$remote_addr;
+                  proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$scheme;
+                  proxy_set_header X-Shared-Key $SHARED_KEY;
+                  proxy_read_timeout 900;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade \$http_upgrade;
+                  proxy_set_header Connection \$http_connection;
+              }
+          }
+          NGINXCONF
+
+          ln -sf /etc/nginx/sites-available/siems.nexsware.com /etc/nginx/sites-enabled/siems.nexsware.com
+          rm -f /etc/nginx/sites-enabled/default
+          nginx -t && systemctl restart nginx
+          certbot --nginx -d siems.nexsware.com --non-interactive --agree-tos -m admin@nexsware.com
+          EOF
+
+      - name: Reset admin credentials
+        run: |
+          ssh -o StrictHostKeyChecking=no root@187.124.153.197 'bash -s' << 'EOF'
+          CONTAINER=$(docker ps -q -f name=utmstack_postgres)
+          HASH=$(python3 -c "
+          import bcrypt
+          pw = b'${{ secrets.SIEM_ADMIN_PASSWORD }}'
+          print(bcrypt.hashpw(pw, bcrypt.gensalt(prefix=b'2a', rounds=10)).decode())
+          ")
+          docker exec "$CONTAINER" psql -U postgres -d utmstack \
+            -c "UPDATE jhi_user SET password_hash='$HASH', email='info@nexsware.com', default_password=false, tfa_secret=NULL, tfa_method=NULL WHERE login='admin';"
+          docker exec "$CONTAINER" psql -U postgres -d utmstack \
+            -c "UPDATE utm_configuration_parameter SET conf_param_value='false' WHERE conf_param_short='utmstack.tfa.enable';"
+          echo "Admin credentials reset successfully"
           EOF
 
       - name: Display deployment information
@@ -143,23 +232,11 @@ jobs:
           echo "========================================="
           echo "UTMStack Deployment Complete!"
           echo "========================================="
-          echo "Instance ID: ${{ needs.deploy-siems-instance.outputs.instance_id }}"
-          echo "IP Address: ${{ needs.deploy-siems-instance.outputs.ip_address }}"
+          echo "URL:        https://siems.nexsware.com"
+          echo "Username:   admin"
           echo ""
-          echo "Access UTMStack UI at:"
-          echo "  https://${{ needs.deploy-siems-instance.outputs.ip_address }}"
-          echo ""
-          echo "Container: nexsware-utmstack:latest"
+          echo "Agent ports:"
+          echo "  9000/9001 - Agent Manager"
+          echo "  50051     - gRPC log ingestion"
+          echo "  8080      - Event processor"
           echo "========================================="
-
-      - name: Health check
-        run: |
-          echo "Waiting for UTMStack container to be ready..."
-          sleep 60
-          ssh -o StrictHostKeyChecking=no root@${{ needs.deploy-siems-instance.outputs.ip_address }} << 'EOF'
-            echo "Container status:"
-            docker ps -a --filter name=utmstack
-            echo ""
-            echo "Container logs (last 20 lines):"
-            docker logs --tail 20 utmstack
-          EOF

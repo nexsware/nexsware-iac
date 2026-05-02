@@ -1,0 +1,40 @@
+# In your app repository: .github/workflows/deploy.yml
+name: Run Database Migrations
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: false
+                type: choice
+                options:
+                    - test
+                    - prod
+    pull_request:
+      branches: [ '**' ]
+      paths:
+        - database/sql/**
+        - '.github/workflows/deploy-run-migrations.ci.yml'
+    push:
+        branches: [main]
+        paths:
+          - 'database/sql/**'
+          - '.github/workflows/deploy-run-migrations.ci.yml'
+
+jobs:
+  run-migrations:
+    uses: nexsware/modules/.github/workflows/deploy-run-migrations.yml@main
+    with:
+      environment: ${{ inputs.environment || 'test' }}
+      database_host: "10.0.0.2"  # Your VPC IP
+      server_host: "172.235.28.178"  # Public IP of database server
+      database_port: "5432"
+      database_name: "nexsware-db"
+      database_user: "postgres"
+      migrations_path: "database/sql"  # Path in your repo
+      flyway_command: "migrate"  # Commands to run
+    secrets:
+      DATABASE_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
