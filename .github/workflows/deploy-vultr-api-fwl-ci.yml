@@ -1,4 +1,4 @@
-name: Deploy Vultr Web Firewall
+name: Deploy Vultr API Firewall
 on:
     workflow_dispatch:
         inputs:
@@ -22,6 +22,8 @@ jobs:
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "Web Firewall for Nexsware infrastructure"
-            firewall_type: "web"
-            allow_ssh_from: "10.0.0.0/24"  # Allow SSH from VPC subnet
+            description: "API Firewall for Nexsware infrastructure"
+            firewall_type: "api"
+            app_subnet: "10.0.0.0/26"  # Allow access from VPC subnet
+            allow_ssh_from: "10.0.0.128/26"  # Allow SSH from VPC subnet
+            app_port: "5000"
