@@ -1,0 +1,31 @@
+name: Deploy Vultr Firewall
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'test'
+                type: choice
+                options:
+                - prod
+                - test
+    pull_request:
+        branches:
+        - '**'
+        paths:
+        - '.github/workflows/deploy-vultr-fwl-ci.yml'
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/deploy-vultr-fwl-ci.yml'
+
+jobs:
+    deploy-firewall:
+        uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
+        secrets: inherit
+        with:
+            environment: "${{ inputs.environment}}"
+            description: "Firewall for Nexsware infrastructure"
+            firewall_type: "web"
