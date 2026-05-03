@@ -12,11 +12,6 @@ on:
                     - prod
                     - test
 
-    pull_request:
-        branches:
-            - "**"
-        paths:
-            - ".github/workflows/deploy-vultr-vpc-ci.yml"
     push:
         branches:
             - main
