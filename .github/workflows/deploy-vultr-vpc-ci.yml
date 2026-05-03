@@ -33,4 +33,5 @@ jobs:
             environment: ${{ inputs.environment}}
             region: "jnb"
             description: "VPC for Nexsware infrastructure"
-            ip_block: "10.0.0.0/24"
+            ip_block: "10.0.0.0"
+            prefix_length: 24
