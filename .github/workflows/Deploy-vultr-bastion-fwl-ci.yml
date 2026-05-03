@@ -1,0 +1,28 @@
+name: Deploy Vultr Bastion Firewall
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'test'
+                type: choice
+                options:
+                - prod
+                - test
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/deploy-vultr-fwl-ci.yml'
+
+jobs:
+  deploy-firewall:
+    uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
+    secrets: inherit
+    with:
+      environment: "${{ inputs.environment || 'prod' }}"
+      description: "Bastion Firewall for Nexsware infrastructure"
+      firewall_type: "custom"
+      enable_ssh: true
+      allow_ssh_from: "0.0.0.0/0"

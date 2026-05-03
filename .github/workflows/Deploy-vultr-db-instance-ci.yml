@@ -27,5 +27,14 @@ jobs:
             os_id: 2284  # Ubuntu 24.04 x64  LTS
             label: "Vultr-database-server"
             postgres_version: "18"
+            listen_address: "*"
+            port: "5432"
+            databases: Safii
+            service_account_username: "svc-safii-api"
+            firewall_group_id: "b0cb0f2f-7217-4bb6-9f66-2f30b68b0926" # Reference to the database firewall group created separately
+            vpc2_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
+
+
             
+
             
