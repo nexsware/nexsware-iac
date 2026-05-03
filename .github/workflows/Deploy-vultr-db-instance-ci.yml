@@ -1,4 +1,4 @@
-name: Deploy Vultr Database Firewall
+name: Deploy Vultr Database VPS
 on:
     workflow_dispatch:
         inputs:
@@ -15,14 +15,17 @@ on:
         - main
         paths:
         - '.github/workflows/deploy-vultr-db-fwl-ci.yml'
+
 jobs:
-    deploy-firewall:
-        uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
+    deploy-database-vps:
+        uses: nexsware/modules/.github/workflows/deploy-vultr-postgres-self-hosted.yml@main
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "Database Firewall for Nexsware infrastructure"
-            firewall_type: "database"
-            app_subnet: "10.0.0.0/26"  # Allow access from VPC subnet 
-            allow_ssh_from: "10.0.0.128/26"  # Allow SSH from VPC subnet
-            app_port: "5432"  # PostgreSQL default port, adjust if using a different database
+            region: "jnb"
+            plan: "vc2-1c-2gb"
+            os_id: 2284  # Ubuntu 24.04 x64  LTS
+            label: "Vultr-database-server"
+            postgres_version: "18"
+            
+            
