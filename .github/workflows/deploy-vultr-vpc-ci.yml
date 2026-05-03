@@ -1,0 +1,35 @@
+name: Deploy Vultr VPC CI
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Environment to deploy"
+                required: true
+                default: "test"
+                type: choice
+                options:
+                    - prod
+                    - test
+
+    pull_request:
+        branches:
+            - "**"
+        paths:
+            - ".github/workflows/deploy-vultr-vpc-ci.yml"
+    push:
+        branches:
+            - main
+        paths:
+            - ".github/workflows/deploy-vultr-vpc-ci.yml"
+
+jobs:
+    deploy-vpc:
+        name: Deploy Vultr VPC
+        uses: nexsware/modules/.github/workflows/deploy-vultr-vpc.yml@main
+        secrets: inherit
+        with:
+            environment: ${{ inputs.environment}}
+            region: "jnb"
+            description: "VPC for Nexsware infrastructure"
+            ip_block: "10.0.0.0/24"
