@@ -26,6 +26,10 @@ jobs:
         with:
             environment: ${{ inputs.environment}}
             region: "jnb"
-            plan: "vc2-1c-2gb"  # Adjust as needed
-            os_id: "215"  # Ubuntu 22.04 x64
+            plan: "vc2-1c-1gb"  # Adjust as needed
+            os_id: "2284"  # Ubuntu 24.04 x64 LTS
             label: "Vultr-bastion-host"
+            firewall_group_id: "e988fa71-fda1-441f-a87b-51cd83b4055b" # Reference to the bastion firewall group created separately
+            vpc2_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
+            ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
+            

@@ -1,32 +1,32 @@
-# name: Deploy SIEMS Firewall
+name: Deploy SIEMS Firewall
 
-# on:
-#     workflow_dispatch:
-#         inputs:
-#             environment:
-#                 description: 'Environment to deploy'
-#                 required: true
-#                 type: choice
-#                 options:
-#                 - prod
-#                 - test
-#     pull_request:
-#         branches:
-#         - '**'
-#         paths:
-#         - '.github/workflows/deploy-siems-fwl.ci.yml'
-#     push:
-#         branches:
-#         - main
-#         paths:
-#         - '.github/workflows/deploy-siems-fwl.ci.yml'
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                type: choice
+                options:
+                - prod
+                - test
+    pull_request:
+        branches:
+        - '**'
+        paths:
+        - '.github/workflows/deploy-siems-fwl.ci.yml'
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/deploy-siems-fwl.ci.yml'
         
-# jobs:
-#     deploy-firewall:
-#         uses: nexsware/modules/.github/workflows/deploy-firewall.yml@main
-#         secrets: inherit
-#         with:
-#             instance_id: "89260528"
-#             environment: "${{ inputs.environment || 'test' }}"
-#             application_name: "nexsware-siems"
-#             allow_ssh_from: "172.232.119.4/32"  # Your IP
+jobs:
+    deploy-firewall:
+        uses: nexsware/modules/.github/workflows/deploy-firewall.yml@main
+        secrets: inherit
+        with:
+            instance_id: "89260528"
+            environment: "${{ inputs.environment || 'test' }}"
+            application_name: "nexsware-siems"
+            allow_ssh_from: "172.232.119.4/32"  # Your IP
