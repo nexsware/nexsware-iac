@@ -27,7 +27,8 @@ jobs:
     deploy-vpc:
         name: Deploy Vultr VPC
         uses: nexsware/modules/.github/workflows/deploy-vultr-vpc.yml@main
-        secrets: inherit
+        secrets:
+            VULTR_API_KEY: ${{ secrets.VULTR_API_KEY }}
         with:
             environment: ${{ inputs.environment}}
             region: "jnb"
