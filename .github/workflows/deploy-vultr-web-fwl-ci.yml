@@ -22,6 +22,6 @@ jobs:
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "Firewall for Nexsware infrastructure"
+            description: "Web Firewall for Nexsware infrastructure"
             firewall_type: "web"
             allow_ssh_from: "10.0.0.0/24"  # Allow SSH from VPC subnet
