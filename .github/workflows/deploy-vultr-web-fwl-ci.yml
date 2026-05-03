@@ -10,11 +10,6 @@ on:
                 options:
                 - prod
                 - test
-    pull_request:
-        branches:
-        - '**'
-        paths:
-        - '.github/workflows/deploy-vultr-fwl-ci.yml'
     push:
         branches:
         - main
