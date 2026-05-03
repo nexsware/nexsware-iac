@@ -1,4 +1,4 @@
-name: Deploy Vultr Web Firewall
+name: Deploy Vultr API Firewall
 on:
     workflow_dispatch:
         inputs:
