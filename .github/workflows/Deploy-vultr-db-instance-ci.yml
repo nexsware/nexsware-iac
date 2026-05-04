@@ -23,7 +23,7 @@ jobs:
         with:
             environment: "${{ inputs.environment}}"
             region: "jnb"
-            plan: "vc2-2c-4gb"
+            plan: "vhp-2c-2gb"
             os_id: 2284  # Ubuntu 24.04 x64  LTS
             label: "Vultr-database-server"
             postgres_version: "18"
