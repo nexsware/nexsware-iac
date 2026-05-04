@@ -32,3 +32,8 @@ jobs:
             firewall_group_id: "e988fa71-fda1-441f-a87b-51cd83b4055b" # Reference to the bastion firewall group created separately
             vpc_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
             ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
+            private_ip: '10.0.0.129'      # first usable IP in bastion subnet
+            instance_subnet: '10.0.0.128/26'
+            vpc_cidr: '10.0.0.0/24'
+
+
