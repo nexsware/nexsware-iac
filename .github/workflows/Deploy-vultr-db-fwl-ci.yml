@@ -23,6 +23,7 @@ jobs:
             environment: "${{ inputs.environment}}"
             description: "Database Firewall for Nexsware infrastructure"
             firewall_type: "database"
-            app_subnet: "10.0.0.0/26"  # Allow access from VPC subnet 
-            allow_ssh_from: "10.0.0.128/26"  # Allow SSH from VPC subnet
-            app_port: "5432"  # PostgreSQL default port, adjust if using a different database
+            app_subnet: "10.0.0.0/26"
+            allow_ssh_from: "10.0.0.128/26"
+            bastion_subnet: "10.0.0.128/26"  # allow bastion to reach app_port for tunneling
+            app_port: "5432"
