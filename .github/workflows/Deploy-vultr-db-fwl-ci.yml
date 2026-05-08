@@ -27,3 +27,4 @@ jobs:
             allow_ssh_from: "10.0.0.128/26"
             bastion_subnet: "10.0.0.128/26"  # allow bastion to reach app_port for tunneling
             app_port: "5432"
+            state_key: "${{ inputs.environment}}-database-firewall"
