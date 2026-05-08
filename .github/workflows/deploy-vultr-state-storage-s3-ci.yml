@@ -8,10 +8,6 @@ on:
         required: true
         type: string
         default: 'nexsware-terraform-state'
-      state_endpoint:
-        description: 'Vultr Object Storage S3 endpoint (e.g., ams1.vultrobjects.com)'
-        required: true
-        type: string
 
 jobs:
   create-state-bucket:
@@ -21,7 +17,7 @@ jobs:
         run: |
           aws s3api create-bucket \
             --bucket "${{ inputs.bucket_name }}" \
-            --endpoint-url "https://${{ inputs.state_endpoint }}" \
+            --endpoint-url "https://ams1.vultrobjects.com" \
             --region us-east-1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.VULTR_OBJECT_STORAGE_ACCESS_KEY }}
@@ -33,9 +29,9 @@ jobs:
           echo "  Terraform State S3 Bucket Created"
           echo "================================================"
           echo "Bucket   : ${{ inputs.bucket_name }}"
-          echo "Endpoint : https://${{ inputs.state_endpoint }}"
+          echo "Endpoint : https://ams1.vultrobjects.com"
           echo ""
           echo "Save these as GitHub Actions secrets:"
           echo "  VULTR_STATE_BUCKET   = ${{ inputs.bucket_name }}"
-          echo "  VULTR_STATE_ENDPOINT = https://${{ inputs.state_endpoint }}"
+          echo "  VULTR_STATE_ENDPOINT = https://ams1.vultrobjects.com"
           echo "================================================"
