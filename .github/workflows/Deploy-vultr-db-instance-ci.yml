@@ -36,4 +36,3 @@ jobs:
             vpc_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
             private_ip: '10.0.0.65'      # first usable IP in database subnet
             db_subnet: '10.0.0.64/26'
-            vpc_cidr: '10.0.0.0/24'
