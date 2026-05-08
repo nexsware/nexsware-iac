@@ -16,7 +16,7 @@ jobs:
     uses: nexsware/modules/.github/workflows/deploy-vultr-object-storage.yml@main
     secrets: inherit
     with:
-      cluster_id: 3  # Vultr Object Storage cluster ID for Amsterdam
+      cluster_id: 6  # Vultr Object Storage cluster ID for Amsterdam
       tier_id: 2  # Standard performance tier
       label: "Safii Object Storage"
       environment: ${{ inputs.environment }}
