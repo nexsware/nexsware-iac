@@ -1,0 +1,24 @@
+name: Deploy Object Storage
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment (e.g., test, prod)'
+        required: true
+        type: choice
+        options:
+          - test
+          - prod
+
+jobs:
+  deploy-state-storage:
+    uses: nexsware/modules/.github/workflows/deploy-vultr-object-storage.yml@main
+    secrets: inherit
+    with:
+      cluster_id: "3"  # Vultr region code for Amsterdam, adjust as needed
+      label: "Safii Object Storage"
+      environment: ${{ inputs.environment }}
+      state_key: "safii-object-storage"
+      state_endpoint: "https://ams1.vultrobjects.com"
+      # state_bucket intentionally omitted — this run uses local state to bootstrap the bucket
