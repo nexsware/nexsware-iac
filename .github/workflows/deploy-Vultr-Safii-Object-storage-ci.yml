@@ -1,4 +1,4 @@
-name: Deploy Object Storage
+name: Deploy Vultr Safii Object Storage
 
 on:
   workflow_dispatch:
