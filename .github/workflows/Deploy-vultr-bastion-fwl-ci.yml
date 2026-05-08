@@ -21,7 +21,7 @@ jobs:
     uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
     secrets: inherit
     with:
-      environment: "${{ inputs.environment || 'prod' }}"
+      environment: "${{ inputs.environment }}"
       description: "Bastion Firewall for Nexsware infrastructure"
       firewall_type: "custom"
       state_key: "${{ inputs.environment}}-bastion-firewall"
