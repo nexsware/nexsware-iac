@@ -1,0 +1,41 @@
+name: Deploy Vultr Terraform State S3 Bucket
+
+on:
+  workflow_dispatch:
+    inputs:
+      bucket_name:
+        description: 'S3 bucket name to create inside the existing Vultr Object Storage subscription'
+        required: true
+        type: string
+        default: 'nexsware-terraform-state'
+      state_endpoint:
+        description: 'Vultr Object Storage S3 endpoint (e.g., ams1.vultrobjects.com)'
+        required: true
+        type: string
+
+jobs:
+  create-state-bucket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create S3 Bucket
+        run: |
+          aws s3api create-bucket \
+            --bucket "${{ inputs.bucket_name }}" \
+            --endpoint-url "https://${{ inputs.state_endpoint }}" \
+            --region us-east-1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.VULTR_OBJECT_STORAGE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.VULTR_OBJECT_STORAGE_SECRET_KEY }}
+
+      - name: Show Next Steps
+        run: |
+          echo "================================================"
+          echo "  Terraform State S3 Bucket Created"
+          echo "================================================"
+          echo "Bucket   : ${{ inputs.bucket_name }}"
+          echo "Endpoint : https://${{ inputs.state_endpoint }}"
+          echo ""
+          echo "Save these as GitHub Actions secrets:"
+          echo "  VULTR_STATE_BUCKET   = ${{ inputs.bucket_name }}"
+          echo "  VULTR_STATE_ENDPOINT = https://${{ inputs.state_endpoint }}"
+          echo "================================================"
