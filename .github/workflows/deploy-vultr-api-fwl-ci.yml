@@ -25,5 +25,6 @@ jobs:
             description: "API Firewall for Nexsware infrastructure"
             firewall_type: "api"
             app_subnet: "10.0.0.0/26"  # Allow access from VPC subnet
+            state_key: "${{ inputs.environment}}-api-firewall"
             allow_ssh_from: "10.0.0.128/26"  # Allow SSH from VPC subnet
             app_port: "5000"
