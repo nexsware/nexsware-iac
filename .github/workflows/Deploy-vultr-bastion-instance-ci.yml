@@ -34,4 +34,6 @@ jobs:
             ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
             private_ip: '10.0.0.129'      # first usable IP in bastion subnet
             instance_subnet: '10.0.0.128/26'
+            db_subnet: '10.0.0.64/26'
+
 
