@@ -1,0 +1,28 @@
+name: Deploy Vultr Safii API Nginx
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'test'
+                type: choice
+                options:
+                - prod
+                - test
+jobs:
+    deploy-api-nginx:
+        name: Deploy Vultr Safii API Nginx
+        uses: nexsware/modules/.github/workflows/deploy-vultr-nginx.yml@main
+        secrets: inherit
+        with:
+            region: "jnb"
+            os_id: 2284
+            label: "${{ inputs.environment}}-app-server-nginx"
+            server_name: "${{ inputs.environment}}.safii.nexsware.com"
+            firewall_group_id: "467a4c21-c792-41a3-b434-74ff6b81b5d3"
+            vpc_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e"
+            ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10"
+            environment: "${{ inputs.environment}}"
+            state_key: "${{ inputs.environment}}/app-server-nginx"
