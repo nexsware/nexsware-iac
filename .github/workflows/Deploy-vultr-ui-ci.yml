@@ -1,0 +1,33 @@
+name: Deploy vultr Safii UI Instance
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'test'
+                type: choice
+                options:
+                - prod
+                - test
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/deploy-vultr-ui-instance-ci.yml'
+jobs:
+    deploy-ui:
+        name: Deploy vultr Safii UI Instance
+        uses: nexsware/modules/.github/workflows/deploy-vultr-instance.yml@main
+        secrets: inherit
+        with:
+            environment: "${{ inputs.environment}}"
+            region: "jnb"
+            plan: "vc2-1c-1gb"  # Adjust as needed
+            os_id: 2284  # Ubuntu 24.04 x64 LTS
+            label: "Safii-ui-host"
+            state_key: "${{ inputs.environment}}-safii-ui-vps"
+            vpc_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
+            ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
+            private_ip: '10.0.0.2'
+            instance_subnet: '10.0.0.0/26'
