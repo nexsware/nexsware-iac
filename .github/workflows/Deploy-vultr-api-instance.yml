@@ -1,4 +1,4 @@
-name: Deploy Safii API Instance
+name: Deploy vultr Safii API Instance
 on:
     workflow_dispatch:
         inputs:
@@ -17,7 +17,7 @@ on:
         - '.github/workflows/deploy-vultr-api-instance-ci.yml'
 jobs:
     deploy-api:
-        name: Deploy Safii API Instance
+        name: Deploy vultr Safii API Instance
         uses: nexsware/modules/.github/workflows/deploy-vultr-instance.yml@main
         secrets: inherit
         with:
