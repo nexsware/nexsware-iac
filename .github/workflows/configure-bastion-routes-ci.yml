@@ -1,0 +1,81 @@
+name: Configure Bastion Routes
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment'
+                required: true
+                default: 'test'
+                type: choice
+                options:
+                    - prod
+                    - test
+
+jobs:
+    configure-routes:
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        steps:
+            - name: Setup SSH Key
+              run: |
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/bastion_key
+                  chmod 600 ~/.ssh/bastion_key
+                  if ! ssh-keygen -l -f ~/.ssh/bastion_key > /dev/null 2>&1; then
+                    echo "ERROR: SSH_PRIVATE_KEY secret is invalid or not set"
+                    exit 1
+                  fi
+
+            - name: Add App Subnet Route to Bastion
+              run: |
+                  BASTION_IP="${{ vars.BASTION_IP }}"
+
+                  ssh -i ~/.ssh/bastion_key -o StrictHostKeyChecking=no root@${BASTION_IP} << 'ENDSSH'
+                  set -e
+
+                  PRIMARY_IFACE=$(ip route show default | awk '/default/ {print $5; exit}')
+                  VPC_IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | grep -v "$PRIMARY_IFACE" | head -1)
+                  echo "VPC interface: $VPC_IFACE"
+
+                  # Add live route if not already present
+                  if ! ip route show | grep -q "^10\.0\.0\.0/26"; then
+                    ip route add 10.0.0.0/26 dev $VPC_IFACE
+                    echo "Added live route: 10.0.0.0/26 dev $VPC_IFACE"
+                  else
+                    echo "Route 10.0.0.0/26 already present"
+                  fi
+
+                  # Persist in netplan
+                  NETPLAN_FILE="/etc/netplan/99-vpc-static.yaml"
+                  if ! grep -q "10.0.0.0/26" "$NETPLAN_FILE"; then
+                    python3 - << 'PYEOF'
+                  import yaml
+                  with open('/etc/netplan/99-vpc-static.yaml') as f:
+                      cfg = yaml.safe_load(f)
+                  for iface in cfg['network']['ethernets'].values():
+                      routes = iface.setdefault('routes', [])
+                      if not any(r.get('to') == '10.0.0.0/26' for r in routes):
+                          routes.append({'to': '10.0.0.0/26', 'on-link': True})
+                  with open('/etc/netplan/99-vpc-static.yaml', 'w') as f:
+                      yaml.dump(cfg, f, default_flow_style=False)
+                  print("Netplan updated")
+                  PYEOF
+                    chmod 600 "$NETPLAN_FILE"
+                    netplan apply
+                    echo "Netplan applied"
+                  else
+                    echo "Route already in netplan"
+                  fi
+
+                  echo "--- Current VPC routes ---"
+                  ip route show | grep "$VPC_IFACE"
+
+                  echo "--- Testing connectivity to API server ---"
+                  nc -zv 10.0.0.1 22 && echo "SUCCESS: port 22 reachable" || echo "FAILED: port 22 not reachable (check API firewall)"
+                  ENDSSH
+
+            - name: Cleanup
+              if: always()
+              run: rm -f ~/.ssh/bastion_key
