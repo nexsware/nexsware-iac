@@ -14,7 +14,7 @@ on:
         branches:
         - main
         paths:
-        - '.github/workflows/deploy-vultr-fwl-ci.yml'
+        - '.github/workflows/deploy-vultr-api-fwl-ci.yml'
 
 jobs:
     deploy-firewall:
