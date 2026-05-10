@@ -24,5 +24,6 @@ jobs:
             environment: "${{ inputs.environment}}"
             description: "API Firewall for Nexsware infrastructure"
             firewall_type: "web"
+            enable_ssh: true
+            allow_ssh_from: "10.0.0.128/26"
             state_key: "${{ inputs.environment}}-api-firewall"
-            allow_ssh_from: "10.0.0.128/26"  # Allow SSH from VPC subnet
