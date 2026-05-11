@@ -30,7 +30,7 @@ jobs:
 
             - name: Add App Subnet Route to Bastion
               run: |
-                  BASTION_IP="139.84.240.218"  # Replace with actual bastion IP if different
+                  BASTION_IP="${{ vars.BASTION_IP }}"
 
                   ssh -i ~/.ssh/bastion_key -o StrictHostKeyChecking=no root@${BASTION_IP} << 'ENDSSH'
                   set -e
