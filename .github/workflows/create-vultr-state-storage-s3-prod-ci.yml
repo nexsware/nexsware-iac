@@ -1,4 +1,4 @@
-name: Deploy Vultr Terraform State S3 Bucket
+name: Create Vultr Terraform State S3 Prod Bucket
 
 on:
   workflow_dispatch:
