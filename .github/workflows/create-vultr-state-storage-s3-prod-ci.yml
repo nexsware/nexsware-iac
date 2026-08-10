@@ -12,7 +12,16 @@ on:
 jobs:
   create-state-bucket:
     runs-on: ubuntu-latest
+    environment: prod
     steps:
+      - name: Validate credentials
+        run: |
+          test -n "${AWS_ACCESS_KEY_ID}"
+          test -n "${AWS_SECRET_ACCESS_KEY}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.VULTR_OBJECT_STORAGE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.VULTR_OBJECT_STORAGE_SECRET_KEY }}
+
       - name: Create S3 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.VULTR_OBJECT_STORAGE_ACCESS_KEY }}
