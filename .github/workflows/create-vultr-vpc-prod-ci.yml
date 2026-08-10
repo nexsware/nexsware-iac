@@ -1,4 +1,4 @@
-name: Deploy Vultr VPC CI
+name: Create Vultr VPC Prod CI
 
 on:
     workflow_dispatch:
@@ -6,21 +6,20 @@ on:
             environment:
                 description: "Environment to deploy"
                 required: true
-                default: "test"
+                default: "prod"
                 type: choice
                 options:
                     - prod
-                    - test
 
     push:
         branches:
             - main
         paths:
-            - ".github/workflows/deploy-vultr-vpc-ci.yml"
+            - ".github/workflows/create-vultr-vpc-prod-ci.yml"
 
 jobs:
-    deploy-vpc:
-        name: Deploy Vultr VPC
+    create-vpc:
+        name: Create Vultr VPC
         uses: nexsware/modules/.github/workflows/deploy-vultr-vpc.yml@main
         secrets:
             VULTR_API_KEY: ${{ secrets.VULTR_API_KEY }}
@@ -31,5 +30,5 @@ jobs:
             state_key: "${{ inputs.environment}}-vpc"
             region: "jnb"
             description: "VPC for Nexsware infrastructure"
-            ip_block: "10.0.0.0"
+            ip_block: "10.1.0.0"
             prefix_length: 24
