@@ -7,7 +7,7 @@ on:
         description: 'S3 bucket name to create inside the existing Vultr Object Storage subscription'
         required: true
         type: string
-        default: 'nexsware-terraform-state'
+        default: 'nexsware-terraform-state-prod'
 
 jobs:
   create-state-bucket:
