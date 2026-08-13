@@ -1,0 +1,28 @@
+name: Deploy Vultr API Firewall Prod
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'prod'
+                type: choice
+                options:
+                - prod
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/create-vultr-api-fwl-prod-ci.yml'
+
+jobs:
+    deploy-firewall:
+        uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
+        secrets: inherit
+        with:
+            environment: "${{ inputs.environment}}"
+            description: "API Firewall for Nexsware infrastructure"
+            firewall_type: "web"
+            enable_ssh: true
+            allow_ssh_from: "10.1.0.128/26"
+            state_key: "${{ inputs.environment}}-api-firewall"
