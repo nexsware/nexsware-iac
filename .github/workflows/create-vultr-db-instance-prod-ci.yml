@@ -22,7 +22,7 @@ jobs:
         with:
             environment: "prod"
             region: "jnb"
-            plan: "vc2-1c-1gb"
+            plan: "vhf-1c-1gb"
             os_id: 2284  # Ubuntu 24.04 x64  LTS
             label: "prod-vultr-database-server"
             postgres_version: "18"
@@ -32,7 +32,7 @@ jobs:
             service_account_username: "svc-safii-api"
             state_key: "prod-database-vps"
             state_bucket: "nexsware-terraform-state-prod"
-            firewall_group_id: "${{ vars.PROD_DATABASE_FIREWALL_GROUP_ID }}" # Set after create-vultr-db-fwl-prod-ci.yml has run
+            firewall_group_id: "efee4ce4-9615-4a4f-8277-f568ad8755e0" # Set after create-vultr-db-fwl-prod-ci.yml has run
             vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml
             private_ip: '10.1.0.65'      # first usable IP in database subnet
             db_subnet: '10.1.0.64/26'
