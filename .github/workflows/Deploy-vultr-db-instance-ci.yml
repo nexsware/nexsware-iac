@@ -14,7 +14,7 @@ on:
         branches:
         - main
         paths:
-        - '.github/workflows/deploy-vultr-db-fwl-ci.yml'
+        - '.github/workflows/Deploy-vultr-db-instance-ci.yml'
 
 jobs:
     deploy-database-vps:
@@ -31,8 +31,16 @@ jobs:
             port: 5432
             databases: Safii
             service_account_username: "svc-safii-api"
+            # JSON string — reusable workflow inputs cannot be lists or objects,
+            # and the secrets context is unavailable here, so the password comes
+            # from the DATABASE_USER_PASSWORDS secret keyed by this username.
+            # "crud" grants data access and EXECUTE on routines, no DDL.
+            database_users: >-
+                [{"username": "svc-safii-test", "privileges": "crud"}]
             state_key: "${{ inputs.environment}}-database-vps"
             firewall_group_id: "2f634a01-3f72-41fb-9195-72c526748d39" # Reference to the database firewall group created separately
             vpc_ids: "6836516b-2681-4914-8f57-f9a1dc3e241e" # Reference to the VPC created separately
             private_ip: '10.0.0.65'      # first usable IP in database subnet
             db_subnet: '10.0.0.64/26'
+            app_subnet: '10.0.0.0/26'      # cloud-init: UFW allow 5432 + VPC route
+            bastion_subnet: '10.0.0.128/26'  # cloud-init: UFW allow 5432 for tunneling + VPC route
