@@ -21,7 +21,7 @@ jobs:
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "Bastion Firewall for Nexsware infrastructure"
+            description: "Bastion Firewall for Nexsware infrastructure Prod"
             firewall_type: "custom"
             state_key: "${{ inputs.environment}}-bastion-firewall"
             state_bucket: "nexsware-terraform-state-prod"
