@@ -20,12 +20,12 @@ jobs:
         uses: nexsware/modules/.github/workflows/deploy-vultr-instance.yml@main
         secrets: inherit
         with:
-            environment: "${{ inputs.environment}}"
+            environment: "prod"
             region: "jnb"
             plan: "vc2-1c-1gb"  # Adjust as needed
             os_id: 2284  # Ubuntu 24.04 x64 LTS
-            label: "${{ inputs.environment}}-safii-ui-host"
-            state_key: "${{ inputs.environment}}-safii-ui-vps"
+            label: "prod-safii-ui-host"
+            state_key: "prod-safii-ui-vps"
             state_bucket: "nexsware-terraform-state-prod"
             vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml
             ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
