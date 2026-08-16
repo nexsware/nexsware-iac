@@ -24,7 +24,7 @@ jobs:
       cluster_id: 6  # Vultr Object Storage cluster ID for Amsterdam
       tier_id: 2  # Standard performance tier
       label: "Safii Object Storage Prod"
-      environment: ${{ inputs.environment }}
-      state_key: "${{ inputs.environment }}-safii-object-storage"
+      environment: prod
+      state_key: "prod-safii-object-storage"
       state_bucket: "nexsware-terraform-state-prod"  # bucket already exists, so state is persisted rather than local
       state_endpoint: "https://ams1.vultrobjects.com"

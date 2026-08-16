@@ -14,7 +14,7 @@ on:
 jobs:
     configure-routes:
         runs-on: ubuntu-latest
-        environment: ${{ inputs.environment }}
+        environment: prod
         steps:
             - name: Setup SSH Key
               run: |

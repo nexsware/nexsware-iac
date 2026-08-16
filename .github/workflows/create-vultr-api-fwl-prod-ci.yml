@@ -20,10 +20,10 @@ jobs:
         uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
         secrets: inherit
         with:
-            environment: "${{ inputs.environment}}"
+            environment: "prod"
             description: "API Firewall for Nexsware infrastructure Prod"
             firewall_type: "web"
             enable_ssh: true
             allow_ssh_from: "10.1.0.128/26"
-            state_key: "${{ inputs.environment}}-api-firewall"
+            state_key: "prod-api-firewall"
             state_bucket: "nexsware-terraform-state-prod"

@@ -20,17 +20,17 @@ jobs:
         uses: nexsware/modules/.github/workflows/deploy-vultr-postgres-self-hosted.yml@main
         secrets: inherit
         with:
-            environment: "${{ inputs.environment}}"
+            environment: "prod"
             region: "jnb"
             plan: "vc2-1c-1gb"
             os_id: 2284  # Ubuntu 24.04 x64  LTS
-            label: "${{ inputs.environment}}-vultr-database-server"
+            label: "prod-vultr-database-server"
             postgres_version: "18"
             listen_address: "*"
             port: 5432
             databases: Safii
             service_account_username: "svc-safii-api"
-            state_key: "${{ inputs.environment}}-database-vps"
+            state_key: "prod-database-vps"
             state_bucket: "nexsware-terraform-state-prod"
             firewall_group_id: "${{ vars.PROD_DATABASE_FIREWALL_GROUP_ID }}" # Set after create-vultr-db-fwl-prod-ci.yml has run
             vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml

@@ -23,11 +23,11 @@ jobs:
         with:
             region: "jnb"
             os_id: 2284
-            label: "${{ inputs.environment}}-app-server-nginx"
+            label: "prod-app-server-nginx"
             server_name: "safii.nexsware.com"  # prod serves the apex sub-domain, not <env>.safii.nexsware.com
             firewall_group_id: "${{ vars.PROD_API_FIREWALL_GROUP_ID }}" # Set after create-vultr-api-fwl-prod-ci.yml has run
             vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml
             ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
-            environment: "${{ inputs.environment}}"
-            state_key: "${{ inputs.environment}}/app-server-nginx"
+            environment: "prod"
+            state_key: "prod/app-server-nginx"
             state_bucket: "nexsware-terraform-state-prod"

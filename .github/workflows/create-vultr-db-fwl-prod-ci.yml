@@ -20,12 +20,12 @@ jobs:
         uses: nexsware/modules/.github/workflows/deploy-vultr-firewall.yml@main
         secrets: inherit
         with:
-            environment: "${{ inputs.environment}}"
+            environment: "prod"
             description: "Database Firewall for Nexsware infrastructure Prod"
             firewall_type: "database"
             app_subnet: "10.1.0.0/26"
             allow_ssh_from: "10.1.0.128/26"
             bastion_subnet: "10.1.0.128/26"  # allow bastion to reach app_port for tunneling
             app_port: "5432"
-            state_key: "${{ inputs.environment}}-database-firewall"
+            state_key: "prod-database-firewall"
             state_bucket: "nexsware-terraform-state-prod"
