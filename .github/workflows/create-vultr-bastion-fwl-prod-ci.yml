@@ -1,4 +1,4 @@
-name: Deploy Vultr API Firewall Prod
+name: Deploy Vultr Bastion Firewall Prod
 on:
     workflow_dispatch:
         inputs:
@@ -13,7 +13,7 @@ on:
         branches:
         - main
         paths:
-        - '.github/workflows/create-vultr-api-fwl-prod-ci.yml'
+        - '.github/workflows/create-vultr-bastion-fwl-prod-ci.yml'
 
 jobs:
     deploy-firewall:
@@ -21,9 +21,9 @@ jobs:
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "API Firewall for Nexsware infrastructure"
-            firewall_type: "web"
-            enable_ssh: true
-            allow_ssh_from: "10.1.0.128/26"
-            state_key: "${{ inputs.environment}}-api-firewall"
+            description: "Bastion Firewall for Nexsware infrastructure"
+            firewall_type: "custom"
+            state_key: "${{ inputs.environment}}-bastion-firewall"
             state_bucket: "nexsware-terraform-state-prod"
+            enable_ssh: true
+            allow_ssh_from: "0.0.0.0/0"

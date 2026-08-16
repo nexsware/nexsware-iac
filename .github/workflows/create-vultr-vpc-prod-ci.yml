@@ -28,6 +28,7 @@ jobs:
         with:
             environment: ${{ inputs.environment}}
             state_key: "${{ inputs.environment}}-vpc"
+            state_bucket: "nexsware-terraform-state-prod"
             region: "jnb"
             description: "VPC for Nexsware infrastructure"
             ip_block: "10.1.0.0"
