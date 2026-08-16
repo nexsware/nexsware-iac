@@ -29,7 +29,7 @@ jobs:
             listen_address: "*"
             port: 5432
             databases: Safii
-            service_account_username: "svc-safii-api"
+            service_account_username: "svc-safii-prod"
             state_key: "prod-database-vps"
             state_bucket: "nexsware-terraform-state-prod"
             firewall_group_id: "efee4ce4-9615-4a4f-8277-f568ad8755e0" # Set after create-vultr-db-fwl-prod-ci.yml has run
