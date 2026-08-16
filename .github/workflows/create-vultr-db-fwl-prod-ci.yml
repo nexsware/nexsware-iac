@@ -21,7 +21,7 @@ jobs:
         secrets: inherit
         with:
             environment: "${{ inputs.environment}}"
-            description: "Database Firewall for Nexsware infrastructure"
+            description: "Database Firewall for Nexsware infrastructure Prod"
             firewall_type: "database"
             app_subnet: "10.1.0.0/26"
             allow_ssh_from: "10.1.0.128/26"
