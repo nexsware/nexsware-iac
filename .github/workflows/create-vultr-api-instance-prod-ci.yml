@@ -1,0 +1,35 @@
+name: Deploy Vultr Safii API Instance Prod
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to deploy'
+                required: true
+                default: 'prod'
+                type: choice
+                options:
+                - prod
+    push:
+        branches:
+        - main
+        paths:
+        - '.github/workflows/create-vultr-api-instance-prod-ci.yml'
+jobs:
+    deploy-api:
+        name: Deploy Vultr Safii API Instance Prod
+        uses: nexsware/modules/.github/workflows/deploy-vultr-instance.yml@main
+        secrets: inherit
+        with:
+            environment: "prod"
+            region: "jnb"
+            plan: "vc2-1c-1gb"  # Adjust as needed
+            os_id: 2284  # Ubuntu 24.04 x64 LTS
+            label: "prod-safii-api-host"
+            state_key: "prod-safii-api-vps"
+            state_bucket: "nexsware-terraform-state-prod"
+            firewall_group_id: "002dcbd2-7ed0-4236-a703-cf48d1eb6cc0" # Set after create-vultr-api-fwl-prod-ci.yml has run
+            vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml
+            ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
+            private_ip: '10.1.0.2'
+            instance_subnet: '10.1.0.0/26'
+            db_subnet: '10.1.0.64/26'
