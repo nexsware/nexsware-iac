@@ -29,7 +29,7 @@ jobs:
             label: "prod-vultr-bastion-host"
             state_key: "prod-bastion-vps"
             state_bucket: "nexsware-terraform-state-prod"
-            firewall_group_id: "${{ vars.PROD_BASTION_FIREWALL_GROUP_ID }}" # Set after create-vultr-bastion-fwl-prod-ci.yml has run
+            firewall_group_id: "cfcb6332-447e-4127-8cf4-1141a889be89" # Set after create-vultr-bastion-fwl-prod-ci.yml has run
             vpc_ids: "fb10736d-ee5c-4448-8c22-299fc0a34997" # Prod VPC created by create-vultr-vpc-prod-ci.yml
             ssh_key_ids: "caf0a6fb-b120-4648-b6e0-9018519e6b10" # Reference to the SSH key created separately
             private_ip: '10.1.0.129'      # first usable IP in bastion subnet
